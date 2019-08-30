@@ -5,6 +5,8 @@ const LOADER_COVER_CLASS = "i-popup i-popup_autoclosable_no i-popup_fixed_yes i-
 const WORDS_COUNTER_CLASS = "ywa-info_b ywa-info_countWords";
 const ADD_ALL_BTN_CLASS = "ywa-addAll";
 const CONFIRM_BTN_CLASS = "ywa-btn ywa-btn-primary ywa-blockAddAll_ok";
+
+const NEXT_PAGE_BTN_WRAPPER_ACTIVE_CLASS = "b-pager__active";
 const NEXT_PAGE_BTN_CLASS = "b-pager__next";
 
 function isElementVisible(el) {
@@ -26,6 +28,12 @@ function countWords(){
 	const wordsCounterSpan = document.getElementsByClassName(WORDS_COUNTER_CLASS)[0];
 	const innerText = wordsCounterSpan.innerHTML === "..." ? "0" : wordsCounterSpan.innerHTML;
 	return parseInt(innerText.replace(/ /g, ''));
+}
+
+function isNextPageEnabled(){
+	const nextPageBtn = document.getElementsByClassName(NEXT_PAGE_BTN_CLASS)[0];
+	const wrapper = nextPageBtn.parentNode;
+	return wrapper.className === NEXT_PAGE_BTN_WRAPPER_ACTIVE_CLASS;
 }
 
 async function collectPageWords(){
@@ -62,8 +70,11 @@ async function collectPageWords(){
 }
 
 async function goToNextPage() {
-
 	try{
+		if (isNextPageEnabled() === false)
+			return false;
+
+
 		// Click next page
 		const nextPageBtn = document.getElementsByClassName(NEXT_PAGE_BTN_CLASS)[0];
 		nextPageBtn.click();
@@ -94,8 +105,12 @@ async function main(){
 		for (let i = 0; i < 10; i++){
 			console.log("Iteration: " + i);
 			await collectPageWords();
-			await goToNextPage();
+			const canGo = await goToNextPage();
+			if (!canGo)
+				break;
 		}
+		console.log("Collected all!");
+		return true;
 	}
 	catch(error){
 		console.error("Error: ", { error });
